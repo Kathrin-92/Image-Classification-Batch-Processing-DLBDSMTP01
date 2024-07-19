@@ -21,9 +21,9 @@ train_df.info()  # -->  60000 entries; 785 entries, label to pixel784; dataype =
 train_df.head()  # --> first column is the label data, the remaining columns are pixel data
 
 # Read testing data file
-test_df = pd.read_csv(FILE_PATH_TEST, sep=';', dtype={11: str})
+test_df = pd.read_csv(FILE_PATH_TEST, sep=';')
 # Checking data structure
-test_df.info()  # -->  60000 entries; 785 entries, label to pixel784; dataype = int
+test_df.info()  # -->   9901 entries; 785 entries, label to pixel784; dataype = int
 test_df.head()  # --> first column is the label data, the remaining columns are pixel data
 
 
