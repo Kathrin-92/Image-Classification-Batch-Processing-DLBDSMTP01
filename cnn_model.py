@@ -1,3 +1,16 @@
+"""
+Script that loads the Fashion MNIST dataset, uses Keras to train a basic Convolutional Neural Network (CNN),
+and saves the trained model to a file.
+The Fashion MNIST dataset, which consists of grayscale photos of clothing items, is loaded and preprocessed after the
+required libraries have been imported. Using Keras, the script builds a simple CNN model, then trains it on the dataset
+to categorize the photos into several fashion categories. After evaluating the model's performance,
+the trained model is stored to a pickle file for later reuse.
+
+The python script is based on the following tutorials and the course script for Neural Nets and Deep Learning:
+https://www.kaggle.com/code/vishwasgpai/guide-for-creating-cnn-model-using-csv-file
+https://www.kaggle.com/code/pavansanagapati/a-simple-cnn-model-beginner-guide/notebook
+"""
+
 # ----------------------------------------------------------------------------------------------------------------------
 # IMPORTS
 # ----------------------------------------------------------------------------------------------------------------------
@@ -5,6 +18,7 @@
 # standard library imports
 import pandas as pd
 import numpy as np
+import os
 
 # third-party imports
 import matplotlib.pyplot as plt
@@ -13,9 +27,11 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
+import pickle
 
 # local imports
 from config import FILE_PATH_TRAIN, FILE_PATH_TEST
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # LOADING DATA
@@ -64,7 +80,7 @@ for i in range(25):  # create a 5x5 grid (25 images)
     plt.imshow(x_train[i].reshape((28, 28)), cmap='gray')
     label_index = int(y_train[i])
     plt.title(class_names[label_index])
-# plt.show()
+plt.show()
 
 # reshape training, validation and test data, so that it can be processed by keras model;
 # to fit expected input shape of the convolutional layers in the CNN model, data is reshaped into a 3D format/matrix
@@ -73,7 +89,7 @@ for i in range(25):  # create a 5x5 grid (25 images)
 x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
 x_validate = x_validate.reshape(x_validate.shape[0], 28, 28, 1)
 x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
-print("done reshaping")
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # SETUP AND TRAIN MODEL
@@ -93,7 +109,6 @@ cnn_model = Sequential([
                         # added before dense layer to prevent overfitting on fully connected layers
     Dense(units=10, activation='softmax')  # output layer
 ])
-print("done model architecture setup")
 
 # compile the model
 cnn_model.compile(
@@ -102,13 +117,11 @@ cnn_model.compile(
     loss='sparse_categorical_crossentropy',  # more memory-efficient training with integer labels
     metrics=['accuracy']
 )
-print("done compiling")
 
 # configure early stopping; helps to prevent overfitting
 early_stopping = EarlyStopping(monitor='val_loss',  # monitor validation loss
                                patience=3,  # epochs to wait for improvement
                                restore_best_weights=True)  # restore best weights after stopping
-
 
 # train the model
 cnn_model.fit(
@@ -120,7 +133,7 @@ cnn_model.fit(
     validation_data=(x_validate, y_validate),
     callbacks=[early_stopping]
 )
-print("done training")
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # EVALUATE MODEL
@@ -130,3 +143,48 @@ cnn_model.summary()
 test_loss, test_acc = cnn_model.evaluate(x_test, y_test)
 print(f'Test loss: {test_loss}')
 print(f'Test accuracy: {test_acc}')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# SAVE THE MODEL
+# ----------------------------------------------------------------------------------------------------------------------
+
+filename = "cnn_model.pkl"
+
+# check if the file exists and delete it if it does
+if os.path.exists(filename):
+    os.remove(filename)
+
+# save the model in a pickle file
+with open(filename, "wb") as file:
+    pickle.dump(cnn_model, file)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# MAKE PREDICTIONS USING TESTING DATA
+# ----------------------------------------------------------------------------------------------------------------------
+
+cnn_model = pickle.load(open(filename, "rb"))
+
+# get the predictions for the test data
+predictions = cnn_model.predict(x_test)
+predicted_labels = np.argmax(predictions, axis=1)  # convert predictions from probabilities to class labels
+
+# print some example predictions for one case to get a feel for the results
+print("Prediction is -> {}".format(predictions[12]))
+print("Actual value is -> {}".format(y_test[12]))
+print("The highest value for label is {}".format(predicted_labels[12]))
+
+# visualize some test images along with their predicted and actual labels
+plt.figure(figsize=(10, 10))
+for i in range(25):  # number of images to display
+    plt.subplot(5, 5, i + 1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.grid(False)
+    plt.imshow(x_test[i].reshape(28, 28), cmap='gray')
+    true_label = class_names[int(y_test[i])]
+    predicted_label = class_names[predicted_labels[i]]
+    plt.title(f'Pred: {predicted_label}\nTrue: {true_label}')
+plt.subplots_adjust(wspace=0.4, hspace=0.6)
+plt.show()
