@@ -19,6 +19,7 @@ https://www.kaggle.com/code/pavansanagapati/a-simple-cnn-model-beginner-guide/no
 import pandas as pd
 import numpy as np
 import os
+import pickle
 
 # third-party imports
 import matplotlib.pyplot as plt
@@ -27,7 +28,6 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-import pickle
 
 # local imports
 from config import FILE_PATH_TRAIN, FILE_PATH_TEST
