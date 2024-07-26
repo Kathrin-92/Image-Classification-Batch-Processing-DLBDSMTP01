@@ -3,12 +3,17 @@ Script that loads the Fashion MNIST dataset, uses Keras to train a basic Convolu
 and saves the trained model to a file.
 The Fashion MNIST dataset, which consists of grayscale photos of clothing items, is loaded and preprocessed after the
 required libraries have been imported. Using Keras, the script builds a simple CNN model, then trains it on the dataset
-to categorize the photos into several fashion categories. After evaluating the model's performance,
-the trained model is stored to a pickle file for later reuse.
+to categorize the photos into several fashion categories.
 
 The python script is based on the following tutorials and the course script for Neural Nets and Deep Learning:
 https://www.kaggle.com/code/vishwasgpai/guide-for-creating-cnn-model-using-csv-file
 https://www.kaggle.com/code/pavansanagapati/a-simple-cnn-model-beginner-guide/notebook
+
+After evaluating the model's performance,the trained model is stored to the MLflow model registry for later reuse.
+The script imports the necessary libraries, including MLflow, loads the trained model and logs the model to MLflow,
+specifying relevant metadata such as the model name and version.
+With this, it registers the model in the MLflow model registry, making it available for deployment.
+
 """
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -18,8 +23,6 @@ https://www.kaggle.com/code/pavansanagapati/a-simple-cnn-model-beginner-guide/no
 # standard library imports
 import pandas as pd
 import numpy as np
-import os
-import pickle
 
 # third-party imports
 import matplotlib.pyplot as plt
@@ -28,6 +31,8 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
+from mlflow.models import infer_signature
+import mlflow.keras
 
 # local imports
 from config import FILE_PATH_TRAIN, FILE_PATH_TEST
@@ -146,25 +151,39 @@ print(f'Test accuracy: {test_acc}')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# SAVE THE MODEL
+# SIGNATURE & LOG MODEL WITH MLFLOW
 # ----------------------------------------------------------------------------------------------------------------------
 
-filename = "cnn_model.pkl"
+# set the tracking URI
+mlflow.set_tracking_uri(uri="http://127.0.0.1:8080")
 
-# check if the file exists and delete it if it does
-if os.path.exists(filename):
-    os.remove(filename)
+# create sample of input and output data so that signature can be automatically inferred
+sample_input = x_test[:1]
+sample_output = cnn_model.predict(sample_input)
+signature_mlflow = infer_signature(sample_input, sample_output)
 
-# save the model in a pickle file
-with open(filename, "wb") as file:
-    pickle.dump(cnn_model, file)
+# log model with MLflow / save model for later retrieval
+with mlflow.start_run() as run:
+    mlflow.set_tag("Training Info", "Basic cnn model for fashion mnist dataset.")
+    model_info = mlflow.keras.log_model(
+        model=cnn_model,
+        artifact_path="fashion_cnn_model",
+        signature=signature_mlflow,
+        registered_model_name="fashion_cnn_model"
+    )
+    mlflow.log_metric("Test accuracy", test_acc)  # log training statistics
+    mlflow.log_metric("Test loss", test_loss)  # log training statistics
+
+run_id = run.info.run_id
+model_uri = f"runs:/{run_id}/cnn_model"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # MAKE PREDICTIONS USING TESTING DATA
 # ----------------------------------------------------------------------------------------------------------------------
 
-cnn_model = pickle.load(open(filename, "rb"))
+# load the model back for predictions as a generic Python Function model
+cnn_model = mlflow.pyfunc.load_model(model_info.model_uri)
 
 # get the predictions for the test data
 predictions = cnn_model.predict(x_test)
