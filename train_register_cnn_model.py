@@ -102,17 +102,28 @@ x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
 
 # define CNN model architecture
 cnn_model = Sequential([
-    Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)),  # first convolutional layer
+    Conv2D(
+        filters=32,
+        kernel_size=(3, 3),
+        activation='relu',
+        input_shape=(28, 28, 1)),  # batch size is handled implicitly by keras and does not need to be specified
     MaxPooling2D(pool_size=(2, 2)),  # first max pooling layer
     Dropout(rate=0.25),  # dropout layer with 25% dropout rate; added after each pooling layer to reduce overfitting
-    Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+    Conv2D(
+        filters=64,
+        kernel_size=(3, 3),
+        activation='relu'),
     MaxPooling2D(pool_size=(2, 2)),
     Dropout(rate=0.25),  # dropout layer with 25% dropout rate; added after each pooling layer to reduce overfitting
     Flatten(),  # flatten output
-    Dense(units=128, activation='relu'),  # fully connected layer
+    Dense(
+        units=128,
+        activation='relu'),  # fully connected layer
     Dropout(rate=0.5),  # dropout layer with 50% dropout rate;
                         # added before dense layer to prevent overfitting on fully connected layers
-    Dense(units=10, activation='softmax')  # output layer
+    Dense(
+        units=10,
+        activation='softmax')  # output layer
 ])
 
 # compile the model
