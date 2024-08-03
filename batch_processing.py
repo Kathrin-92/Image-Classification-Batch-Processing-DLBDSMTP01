@@ -1,7 +1,13 @@
 """
-load a batch of CSV files (aka image data), preprocess the data, and convert it to the required format.
-Send a POST request to the FastAPI endpoint with the preprocessed data.
-Process the API response and save the predictions to a file or temporary storage.
+Script that provides the functionalities for the batch process that sends image data to an API to obtain probabilities
+for the assignment to an image class.
+The API serves as an internal service that the batch processing job interacts with to obtain predictions from the
+cnn model registered with mlflow.
+
+The script provides functions that load a batch of CSV files (aka image data), preprocess the data, and convert it to
+the required format for the API. It also sends a POST request to the FastAPI endpoint with the preprocessed data.
+The response is received and the predictions saved to a file into a local directory. The prediction results are
+stored in a file with the name prediction_results_timestamp.csv.
 """
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -93,18 +99,18 @@ def get_batch_predictions(preprocessed_data):
     if response.status_code == 200:
         predictions = response.json()
         return predictions
-
     else:
         print(f"An error occurred! \nThe status code is: {response.status_code}\nError message: {response.text}")
         return []
 
 
 def save_predictions(predictions, output_directory):
-    # Save predictions to a file or temporary storage
+    # save predictions to a file or temporary storage
     predictions_df = pd.DataFrame(predictions)
     file_name = f"prediction_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     file_path = os.path.join(output_directory, file_name)
     predictions_df.to_csv(file_path, index=False)
+    return file_name
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -124,9 +130,6 @@ def batch_process():
     if df_image_data.empty:
         return
     else:
-        files_already_processed.extend(filenames_processed)
-        save_processed_files(file_path_processed_files, files_already_processed)
-
         # preprocess image data
         print("Start preprocessing new image data...")
         preprocessed_image_data = preprocess_data(df_image_data)
@@ -137,7 +140,10 @@ def batch_process():
             print("No predictions were returned.")
         else:
             print("Predictions successful! Save results...")
-            save_predictions(predictions, PREDICTIONS_PATH)
+            file_name = save_predictions(predictions, PREDICTIONS_PATH)
+            files_already_processed.extend(filenames_processed)
+            save_processed_files(file_path_processed_files, files_already_processed)
+            print(f"Results saved in file '{file_name}'.")
 
 
 if __name__ == "__main__":
