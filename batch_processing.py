@@ -136,6 +136,7 @@ def batch_process():
 
         # send preprocessed data to the prediction API
         predictions = get_batch_predictions(preprocessed_image_data)
+
         if not predictions:
             print("No predictions were returned.")
         else:
