@@ -197,8 +197,10 @@ model_uri = f"runs:/{run_id}/cnn_model"
 cnn_model = mlflow.pyfunc.load_model(model_info.model_uri)
 
 # get the predictions for the test data
+# each element in array represents predicted probability for a class; first value = probability of class 0
 predictions = cnn_model.predict(x_test)
-predicted_labels = np.argmax(predictions, axis=1)  # convert predictions from probabilities to class labels
+# convert predictions from probabilities to class labels
+predicted_labels = np.argmax(predictions, axis=1)
 
 # print some example predictions for one case to get a feel for the results
 print("Prediction is -> {}".format(predictions[12]))
