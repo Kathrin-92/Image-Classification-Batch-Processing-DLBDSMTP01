@@ -41,6 +41,7 @@ def load_data(base_path_to_batch_data, files_already_processed):
         if filename.endswith(".csv") and filename not in files_already_processed:
             file_patch_batch = os.path.join(base_path_to_batch_data, filename)
             input_data = pd.read_csv(file_patch_batch, sep=';')
+            # give each input_data_row a unique name/id so that later i can better match the results to the provided input
             image_data_list.append(input_data)
             filenames_processed.append(filename)
         else:

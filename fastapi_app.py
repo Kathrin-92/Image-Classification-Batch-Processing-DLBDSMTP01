@@ -1,9 +1,20 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# IMPORTS
+# ----------------------------------------------------------------------------------------------------------------------
+
+# standard library imports
+import numpy as np
+
+# third-party imports
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import mlflow.pyfunc
-import numpy as np
 import uvicorn
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# LOADING THE TRAINED MODEL FROM MLFLOW
+# ----------------------------------------------------------------------------------------------------------------------
 
 # load the model
 mlflow.set_tracking_uri(uri="http://127.0.0.1:8080")
@@ -13,13 +24,25 @@ model_uri_path = f"models:/{model_name}/{model_version}"
 cnn_model = mlflow.pyfunc.load_model(model_uri=model_uri_path)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# START API AND DEFINE INPUT AND OUTPUT
+# ----------------------------------------------------------------------------------------------------------------------
+
+def run_server():
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="debug", reload=True)
+    server = uvicorn.Server(config)
+    server.run()
+
+
 app = FastAPI(title="Image Classifier API")
 
 
-# Define a Pydantic model for input data
+# define model for input data
 class InputData(BaseModel):
     data: list[list[float]]
 
+
+# define model for output data
 class PredictionResult(BaseModel):
     input: int
     most_likely_class_name: str
@@ -27,19 +50,23 @@ class PredictionResult(BaseModel):
     corresponding_probability: float
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# DEFINE API ENDPOINTS
+# ----------------------------------------------------------------------------------------------------------------------
+
 # define the index route
 @app.get('/')
 async def index():
     return {"Message": "This is a Welcome Message"}
 
 
-# Define the health check route
+# define the health check route
 @app.get('/health')
 async def health_check():
     return {"status": "healthy"}
 
 
-# Define the batch prediction route
+# define the batch prediction route
 @app.post('/get_batch_prediction', response_model=list[PredictionResult])
 async def predict(input_data: InputData):
     try:
@@ -74,10 +101,8 @@ async def predict(input_data: InputData):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing input data: {str(e)}")
-     # input validation in FastAPI to prevent malformed or malicious data from causing issues
+        # input validation in FastAPI to prevent malformed or malicious data from causing issues
 
 
 if __name__ == "__main__":
-    uvicorn.run("fastapi_app:app", host="0.0.0.0", port=8000, log_level="debug", reload=True)
-
-# http://127.0.0.1:8000/docs/
+    run_server()
