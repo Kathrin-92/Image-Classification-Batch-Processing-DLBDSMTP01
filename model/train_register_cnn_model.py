@@ -35,7 +35,7 @@ from mlflow.models import infer_signature
 import mlflow.keras
 
 # local imports
-from config import FILE_PATH_TRAIN, FILE_PATH_TEST
+from config_modeltraining import FILE_PATH_TRAIN, FILE_PATH_TEST
 
 
 # ----------------------------------------------------------------------------------------------------------------------
