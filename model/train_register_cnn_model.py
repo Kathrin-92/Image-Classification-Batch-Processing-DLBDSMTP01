@@ -85,12 +85,7 @@ for i in range(25):  # create a 5x5 grid (25 images)
     plt.imshow(x_train[i].reshape((28, 28)), cmap='gray')
     label_index = int(y_train[i])
     plt.title(class_names[label_index])
-#plt.show()
-plot_path_sample = '/usr/src/model/model_data/sample_data.png' # BASE_PATH, 'sample_data.png'
-plt.savefig(plot_path_sample)
 sample_data_visualization = plt.gcf()
-
-
 
 # reshape training, validation and test data, so that it can be processed by keras model;
 # to fit expected input shape of the convolutional layers in the CNN model, data is reshaped into a 3D format/matrix
@@ -190,8 +185,6 @@ with mlflow.start_run() as run:
     mlflow.log_metric("Test accuracy", test_acc)  # log training statistics
     mlflow.log_metric("Test loss", test_loss)  # log training statistics
     mlflow.log_figure(sample_data_visualization, "sample_data_visualization.png")
-    #mlflow.log_artifact(artifact_uri + '/usr/src/model/model_data/sample_data.png')
-    #mlflow.log_artifact(artifact_uri + sample_data_visualization)
 
 artifact_uri = run.info.artifact_uri
 run_id = run.info.run_id
