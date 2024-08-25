@@ -1,6 +1,6 @@
 """
 Script that loads the Fashion MNIST dataset, uses Keras to train a basic Convolutional Neural Network (CNN),
-and saves the trained model to a file.
+and saves the trained model.
 The Fashion MNIST dataset, which consists of grayscale photos of clothing items, is loaded and preprocessed after the
 required libraries have been imported. Using Keras, the script builds a simple CNN model, then trains it on the dataset
 to categorize the photos into several fashion categories.
@@ -27,10 +27,10 @@ import numpy as np
 # third-party imports
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
-from keras.optimizers import Adam
-from keras.callbacks import EarlyStopping
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 from mlflow.models import infer_signature
 import mlflow.keras
 
@@ -85,7 +85,12 @@ for i in range(25):  # create a 5x5 grid (25 images)
     plt.imshow(x_train[i].reshape((28, 28)), cmap='gray')
     label_index = int(y_train[i])
     plt.title(class_names[label_index])
-plt.show()
+#plt.show()
+plot_path_sample = '/usr/src/model/model_data/sample_data.png' # BASE_PATH, 'sample_data.png'
+plt.savefig(plot_path_sample)
+sample_data_visualization = plt.gcf()
+
+
 
 # reshape training, validation and test data, so that it can be processed by keras model;
 # to fit expected input shape of the convolutional layers in the CNN model, data is reshaped into a 3D format/matrix
@@ -178,15 +183,20 @@ with mlflow.start_run() as run:
     mlflow.set_tag("Training Info", "Basic cnn model for fashion mnist dataset.")
     model_info = mlflow.keras.log_model(
         model=cnn_model,
-        artifact_path="fashion_cnn_model",
+        artifact_path="fashion_cnn_model_artifacts",
         signature=signature_mlflow,
         registered_model_name="fashion_cnn_model"
     )
     mlflow.log_metric("Test accuracy", test_acc)  # log training statistics
     mlflow.log_metric("Test loss", test_loss)  # log training statistics
+    mlflow.log_figure(sample_data_visualization, "sample_data_visualization.png")
+    #mlflow.log_artifact(artifact_uri + '/usr/src/model/model_data/sample_data.png')
+    #mlflow.log_artifact(artifact_uri + sample_data_visualization)
 
+artifact_uri = run.info.artifact_uri
 run_id = run.info.run_id
 model_uri = f"runs:/{run_id}/cnn_model"
+print(artifact_uri)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -207,16 +217,20 @@ print("Prediction is -> {}".format(predictions[12]))
 print("Actual value is -> {}".format(y_test[12]))
 print("The highest value for label is {}".format(predicted_labels[12]))
 
-# visualize some test images along with their predicted and actual labels
-plt.figure(figsize=(10, 10))
-for i in range(25):  # number of images to display
-    plt.subplot(5, 5, i + 1)
-    plt.xticks([])
-    plt.yticks([])
-    plt.grid(False)
-    plt.imshow(x_test[i].reshape(28, 28), cmap='gray')
-    true_label = class_names[int(y_test[i])]
-    predicted_label = class_names[predicted_labels[i]]
-    plt.title(f'Pred: {predicted_label}\nTrue: {true_label}')
-plt.subplots_adjust(wspace=0.4, hspace=0.6)
-plt.show()
+# Start a new run to log additional artifacts
+with mlflow.start_run(run_id=run_id, nested=True) as run:
+    # visualize some test images along with their predicted and actual labels
+    plt.figure(figsize=(10, 10))
+    for i in range(25):  # number of images to display
+        plt.subplot(5, 5, i + 1)
+        plt.xticks([])
+        plt.yticks([])
+        plt.grid(False)
+        plt.imshow(x_test[i].reshape(28, 28), cmap='gray')
+        true_label = class_names[int(y_test[i])]
+        predicted_label = class_names[predicted_labels[i]]
+        plt.title(f'Pred: {predicted_label}\nTrue: {true_label}')
+    plt.subplots_adjust(wspace=0.4, hspace=0.6)
+    plt.savefig('test_data_visualization.png')
+    mlflow.log_artifact('test_data_visualization.png')
+
