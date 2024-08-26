@@ -9,7 +9,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import mlflow.pyfunc
-import uvicorn
+# import uvicorn
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -19,19 +19,19 @@ import uvicorn
 # load the model
 mlflow.set_tracking_uri(uri="http://127.0.0.1:8080")
 model_name = "fashion_cnn_model"
-model_version = 2
-model_uri_path = f"models:/{model_name}/{model_version}"
-cnn_model = mlflow.pyfunc.load_model(model_uri=model_uri_path)
-
+model_version = 1
+# model_uri_path = f"models/{model_name}/versions/{model_version}"
+# cnn_model = mlflow.pyfunc.load_model(model_uri=model_uri_path)
+cnn_model = mlflow.pyfunc.load_model("http://127.0.0.1:8080/#/models/fashion_cnn_model/versions/1")
 
 # ----------------------------------------------------------------------------------------------------------------------
 # START API AND DEFINE INPUT AND OUTPUT
 # ----------------------------------------------------------------------------------------------------------------------
 
-def run_server():
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="debug", reload=True)
-    server = uvicorn.Server(config)
-    server.run()
+#def run_server():
+#    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="debug", reload=True)
+#    server = uvicorn.Server(config)
+#    server.run()
 
 
 app = FastAPI(title="Image Classifier API")
@@ -104,5 +104,5 @@ async def predict(input_data: InputData):
         # input validation in FastAPI to prevent malformed or malicious data from causing issues
 
 
-if __name__ == "__main__":
-    run_server()
+#if __name__ == "__main__":
+#   run_server()
