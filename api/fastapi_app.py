@@ -9,6 +9,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import mlflow.pyfunc
+from mlflow.exceptions import MlflowException
 # import uvicorn
 
 
@@ -17,12 +18,16 @@ import mlflow.pyfunc
 # ----------------------------------------------------------------------------------------------------------------------
 
 # load the model
-mlflow.set_tracking_uri(uri="http://127.0.0.1:8080")
+mlflow.set_tracking_uri(uri="http://mlflow:8080")
 model_name = "fashion_cnn_model"
 model_version = 1
-# model_uri_path = f"models/{model_name}/versions/{model_version}"
-# cnn_model = mlflow.pyfunc.load_model(model_uri=model_uri_path)
-cnn_model = mlflow.pyfunc.load_model("http://127.0.0.1:8080/#/models/fashion_cnn_model/versions/1")
+
+try:
+    model_uri = f"models:/{model_name}/{model_version}"
+    cnn_model = mlflow.pyfunc.load_model(model_uri=model_uri)
+    print(f"Model loaded from {model_uri}")
+except MlflowException as e:
+    print(f"Failed to load model: {str(e)}")
 
 # ----------------------------------------------------------------------------------------------------------------------
 # START API AND DEFINE INPUT AND OUTPUT
@@ -32,7 +37,6 @@ cnn_model = mlflow.pyfunc.load_model("http://127.0.0.1:8080/#/models/fashion_cnn
 #    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="debug", reload=True)
 #    server = uvicorn.Server(config)
 #    server.run()
-
 
 app = FastAPI(title="Image Classifier API")
 
