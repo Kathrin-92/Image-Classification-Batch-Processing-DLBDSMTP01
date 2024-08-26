@@ -1,0 +1,97 @@
+services:
+  mlflow:
+    image: cnn-model
+    #build:
+    #  context: ./model
+    #  dockerfile: Dockerfile
+    container_name: mlflow_container
+    ports:
+      - "8080:8080"
+    environment:
+      MLFLOW_TRACKING_URI: http://0.0.0.0:8080
+      MLFLOW_ARTIFACT_ROOT: /usr/src/mlartifacts  # Path to shared volume for artifacts
+    volumes:
+      - mlflow-artifacts:/usr/src/mlartifacts  # Shared volume for artifacts
+    networks:
+      - app_network
+    restart: always
+
+  fastapi:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: fastapi_container
+    ports:
+      - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:8080  # Access MLflow server from FastAPI
+    volumes:
+      - mlflow-artifacts:/usr/src/mlartifacts  # Same volume for artifact access
+    networks:
+      - app_network
+    depends_on:
+      - mlflow
+    restart: always
+
+volumes:
+  mlflow-artifacts:
+    driver: local
+
+#  batch_process:
+#    build:
+#      context: ./batch_process
+#      dockerfile: Dockerfile
+#    container_name: batch_process_container
+#    volumes:
+#      - ./upload:/app/upload  # Host directory ./upload mounted to /app/upload inside the container
+#    networks:
+#      - app_network
+#    restart: no
+    #command: ["python", "batch_script.py"]  # Example batch command, adjust based on your use case
+#    depends_on:
+#      - fastapi
+
+networks:
+  app_network:
+    driver: bridge
+
+#volumes:
+#  upload:
+#    driver: local
+
+
+
+
+# The commented out section below is an example of how to define a PostgreSQL
+# database that your application can use. `depends_on` tells Docker Compose to
+# start the database before your application. The `db-data` volume persists the
+# database data between container restarts. The `db-password` secret is used
+# to set the database password. You must create `db/password.txt` and add
+# a password of your choosing to it before running `docker compose up`.
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#   db:
+#     image: postgres
+#     restart: always
+#     user: postgres
+#     secrets:
+#       - db-password
+#     volumes:
+#       - db-data:/var/lib/postgresql/data
+#     environment:
+#       - POSTGRES_DB=example
+#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+#     expose:
+#       - 5432
+#     healthcheck:
+#       test: [ "CMD", "pg_isready" ]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+# volumes:
+#   db-data:
+# secrets:
+#   db-password:
+#     file: db/password.txt
+
