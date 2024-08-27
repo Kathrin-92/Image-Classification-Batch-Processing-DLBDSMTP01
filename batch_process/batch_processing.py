@@ -23,24 +23,23 @@ import numpy as np
 from datetime import datetime
 
 # local imports
-from config import BASE_PATH_BATCH, PROCESSED_FILES_PATH, PREDICTIONS_PATH
+# from config import BASE_PATH_BATCH, PROCESSED_FILES_PATH, PREDICTIONS_PATH
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # FUNCTIONS FOR LOADING A BATCH OF DATA
 # ----------------------------------------------------------------------------------------------------------------------
 
-
-def load_data(base_path_to_batch_data, files_already_processed):
+def load_data(path_to_batch_data, files_already_processed):
     # load and preprocess batch data;
     # check if data was already processed before; read multiple files from temporary storage
     image_data_list = []
     filenames_processed = []
 
-    for filename in os.listdir(base_path_to_batch_data):
+    for filename in os.listdir(path_to_batch_data):
         if filename.endswith(".csv") and filename not in files_already_processed:
-            file_patch_batch = os.path.join(base_path_to_batch_data, filename)
-            input_data = pd.read_csv(file_patch_batch, sep=';')
+            file_path = os.path.join(path_to_batch_data, filename)
+            input_data = pd.read_csv(file_path, sep=';')
             # give each input_data_row a unique name/id so that later i can better match the results to the provided input
             image_data_list.append(input_data)
             filenames_processed.append(filename)
@@ -94,7 +93,7 @@ def preprocess_data(df_image_data):
 
 def get_batch_predictions(preprocessed_data):
     # send batch to api
-    endpoint_url = 'http://127.0.0.1:8000/get_batch_prediction'
+    endpoint_url = 'http://fastapi:8000/api/get_batch_prediction'
     response = requests.post(endpoint_url, json={"data": preprocessed_data})
 
     if response.status_code == 200:
@@ -122,11 +121,12 @@ def save_predictions(predictions, output_directory):
 def batch_process():
     # load and handle batch of image data
     print("Check whether new data is available and load it, if available...")
+    path_to_data = "/api/upload"
     file_name_processed_files = 'processed_files.json'
-    file_path_processed_files = os.path.join(PROCESSED_FILES_PATH, file_name_processed_files)
+    file_path_processed_files = os.path.join(path_to_data, file_name_processed_files)
     files_already_processed = load_processed_files(file_path_processed_files)
 
-    df_image_data, filenames_processed = load_data(BASE_PATH_BATCH, files_already_processed)
+    df_image_data, filenames_processed = load_data(path_to_data, files_already_processed)
 
     if df_image_data.empty:
         return
@@ -142,7 +142,8 @@ def batch_process():
             print("No predictions were returned.")
         else:
             print("Predictions successful! Save results...")
-            file_name = save_predictions(predictions, PREDICTIONS_PATH)
+            path_to_predictions = "/api/prediction-results"
+            file_name = save_predictions(predictions, path_to_predictions)
             files_already_processed.extend(filenames_processed)
             save_processed_files(file_path_processed_files, files_already_processed)
             print(f"Results saved in file '{file_name}'.")
