@@ -33,31 +33,35 @@ services:
       - mlflow
     restart: always
 
+  batch_process:
+    build:
+      context: ./batch_process
+      dockerfile: Dockerfile
+    container_name: batch_process_container
+    volumes:
+      - ./prediction-results:/api/prediction-results
+      - ./upload:/api/upload  # Host directory ./upload mounted to /app/upload inside the container
+    networks:
+      - app_network
+    restart: on-failure # no
+    depends_on:
+      - fastapi
+      - mlflow
+
+
 volumes:
   mlflow-artifacts:
     driver: local
+  upload:
+    driver: local
+  prediction-results:
+    driver: local
 
-#  batch_process:
-#    build:
-#      context: ./batch_process
-#      dockerfile: Dockerfile
-#    container_name: batch_process_container
-#    volumes:
-#      - ./upload:/app/upload  # Host directory ./upload mounted to /app/upload inside the container
-#    networks:
-#      - app_network
-#    restart: no
-    #command: ["python", "batch_script.py"]  # Example batch command, adjust based on your use case
-#    depends_on:
-#      - fastapi
 
 networks:
   app_network:
     driver: bridge
 
-#volumes:
-#  upload:
-#    driver: local
 
 
 
