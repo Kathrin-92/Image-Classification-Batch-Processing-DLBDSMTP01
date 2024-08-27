@@ -29,7 +29,7 @@ COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     python -m pip install --no-cache-dir -r requirements.txt
 
-# copy the model_data directory and other project files into the container
+# copy the project files into the container
 COPY fastapi_app.py /usr/src/api/fastapi_app.py
 
 # expose the fastapi port
