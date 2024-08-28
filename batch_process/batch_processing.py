@@ -22,9 +22,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-# local imports
-# from config import BASE_PATH_BATCH, PROCESSED_FILES_PATH, PREDICTIONS_PATH
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # FUNCTIONS FOR LOADING A BATCH OF DATA
