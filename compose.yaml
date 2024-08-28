@@ -9,9 +9,9 @@ services:
       - "8080:8080"
     environment:
       MLFLOW_TRACKING_URI: http://0.0.0.0:8080
-      MLFLOW_ARTIFACT_ROOT: /usr/src/mlartifacts  # Path to shared volume for artifacts
+      MLFLOW_ARTIFACT_ROOT: /usr/src/mlartifacts  # path to shared volume for artifacts
     volumes:
-      - mlflow-artifacts:/usr/src/mlartifacts  # Shared volume for artifacts
+      - mlflow-artifacts:/usr/src/mlartifacts  # shared volume for artifacts
     networks:
       - app_network
     restart: always
@@ -24,9 +24,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      MLFLOW_TRACKING_URI: http://mlflow:8080  # Access MLflow server from FastAPI
+      MLFLOW_TRACKING_URI: http://mlflow:8080  # access MLflow server from FastAPI
     volumes:
-      - mlflow-artifacts:/usr/src/mlartifacts  # Same volume for artifact access
+      - mlflow-artifacts:/usr/src/mlartifacts  # same volume for artifact access
     networks:
       - app_network
     depends_on:
@@ -40,10 +40,10 @@ services:
     container_name: batch_process_container
     volumes:
       - ./prediction-results:/api/prediction-results
-      - ./upload:/api/upload  # Host directory ./upload mounted to /app/upload inside the container
+      - ./upload:/api/upload
     networks:
       - app_network
-    restart: on-failure # no
+    restart: on-failure
     depends_on:
       - fastapi
       - mlflow
