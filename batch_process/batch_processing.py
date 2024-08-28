@@ -93,7 +93,7 @@ def preprocess_data(df_image_data):
 
 def get_batch_predictions(preprocessed_data):
     # send batch to api
-    endpoint_url = 'http://fastapi:8000/api/get_batch_prediction'
+    endpoint_url = 'http://fastapi:8000/get_batch_prediction'
     response = requests.post(endpoint_url, json={"data": preprocessed_data})
 
     if response.status_code == 200:
