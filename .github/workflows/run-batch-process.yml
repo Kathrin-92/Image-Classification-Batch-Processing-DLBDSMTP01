@@ -39,6 +39,9 @@ jobs:
       - name: List Uploaded Files
         run: ls ./upload
 
+      - name: Docker Logs
+        run: docker logs batch_process
+
       - name: Upload Prediction Results
         uses: actions/upload-artifact@v4
         with:

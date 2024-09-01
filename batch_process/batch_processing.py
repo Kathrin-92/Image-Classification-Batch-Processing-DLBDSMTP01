@@ -126,8 +126,10 @@ def batch_process():
     files_already_processed = load_processed_files(file_path_processed_files)
 
     df_image_data, filenames_processed = load_data(path_to_data, files_already_processed)
+    print("i do this")
 
     if df_image_data.empty:
+        print("i have an empty image df")
         return
     else:
         # preprocess image data
