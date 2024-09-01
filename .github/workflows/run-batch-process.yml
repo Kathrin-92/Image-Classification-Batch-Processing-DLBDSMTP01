@@ -1,0 +1,26 @@
+name: Run Batch Process
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+  workflow_dispatch:
+    inputs:
+      trigger:
+        description: "Manually trigger the batch process"
+        required: false
+
+jobs:
+  run-batch-process:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run Batch Process Container
+        run: |
+          docker-compose -f compose.yml up --build batch_process
