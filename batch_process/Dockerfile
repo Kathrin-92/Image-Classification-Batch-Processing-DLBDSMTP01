@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
     libfreetype6-dev \
     libpng-dev \
+    cron \
     && apt-get install -y curl \
     && apt-get install -y procps \
     && python -m pip install --upgrade pip \
@@ -35,4 +36,14 @@ COPY prediction-results /usr/src/batch_process/prediction-results
 COPY batch_processing.py /usr/src/batch_process/batch_processing.py
 
 # run the batch_process.py script directly
-CMD ["python", "batch_processing.py"]
+# CMD ["python", "batch_processing.py"]
+
+# copy crontab file to the container
+COPY crontab /etc/cron.d/batch-cron
+
+# Give execution rights to the cron job
+RUN chmod 0644 /etc/cron.d/batch-cron
+
+# Apply the cron job and start the cron service
+RUN crontab /etc/cron.d/batch-cron
+CMD ["cron", "-f"]

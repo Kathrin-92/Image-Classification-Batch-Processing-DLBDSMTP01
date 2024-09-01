@@ -1,0 +1,2 @@
+# Run the batch_processing.py script every 5 minutes
+0 0 * * * /usr/local/bin/python /usr/src/batch_process/batch_processing.py >> /proc/1/fd/1 2>> /proc/1/fd/2
