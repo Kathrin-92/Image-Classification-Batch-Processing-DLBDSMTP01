@@ -29,11 +29,11 @@ jobs:
 
       # Step 1: Get CNN Model up and running
       - name: Build Docker Image for Model
-        run: docker-compose -f compose.yml build mlflow
+        run: docker-compose -f compose.yaml build mlflow
         working-directory: .
 
       - name: Start MLflow Container
-        run: docker-compose -f compose.yml up -d mlflow
+        run: docker-compose -f compose.yaml up -d mlflow
 
       - name: Wait for the Model to be build and ready
         run: |
