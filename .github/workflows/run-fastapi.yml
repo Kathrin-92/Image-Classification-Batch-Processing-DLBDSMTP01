@@ -1,4 +1,4 @@
-name: Run ML Flow and CNN Model
+name: Run Fastapi App
 
 on:
   workflow_dispatch:
