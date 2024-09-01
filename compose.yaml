@@ -1,9 +1,9 @@
 services:
   mlflow:
-    image: cnn-model
-    #build:
-    #  context: ./model
-    #  dockerfile: Dockerfile
+    #image: cnn-model
+    build:
+      context: ./model
+      dockerfile: Dockerfile
     container_name: mlflow_container
     ports:
       - "8080:8080"
