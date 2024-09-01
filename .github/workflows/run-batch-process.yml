@@ -27,41 +27,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      # Step 1: Get CNN Model up and running
-      - name: Build Docker Image for Model (if necessary)
-        if: ${{ needs.build.outputs.image_changed == 'true' }}
-        run: docker-compose -f compose.yaml build mlflow
-        working-directory: .
-
-      - name: Start MLflow Container
-        run: docker-compose -f compose.yaml up -d mlflow
-
-      - name: Wait for the Model to be build and ready
-        run: |
-          echo "Waiting for the model to be build."
-          sleep 60  
-
-      #- name: Check MLflow Status
-      #  run:
-      #    curl -I http://mlflow:8080
-
-      # Step 2: Get FastApi up and running
-      - name: Build FastAPI Image (if necessary)
-        if: ${{ needs.build.outputs.image_changed == 'true' }}
-        run: docker-compose -f compose.yaml build fastapi
-
-      - name: Start Fastapi App Container
-        run: docker-compose -f compose.yaml up -d fastapi
-
-      - name: Wait for the Api to be ready
-        run: |
-          echo "Waiting for the api to be ready"
-          sleep 60  
-
       # Step 3: Get the Batch Process up and running
       - name: Build Batch Image (if necessary)
         if: ${{ needs.build.outputs.image_changed == 'true' }}
-        run: docker-compose -f compose.yaml build fastapi
+        run: docker-compose -f compose.yaml build batch_process
 
       - name: Run Batch Process Container
         run: docker-compose -f compose.yaml up --no-deps batch_process
@@ -72,3 +41,6 @@ jobs:
         with:
           name: prediction-results
           path: ./batch_process/prediction-results
+
+      - name: Stop Containers (Optional)
+        run: docker-compose -f compose.yml down batch_process
