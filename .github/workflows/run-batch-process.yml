@@ -28,7 +28,7 @@ jobs:
 
       - name: Build Docker images
         run: |
-            docker-compose -f compose.yml build
+            docker-compose -f compose.yaml build
         working-directory: .
 
       - name: Run Batch Process Container
