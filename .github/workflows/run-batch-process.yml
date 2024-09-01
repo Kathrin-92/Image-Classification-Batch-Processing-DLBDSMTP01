@@ -42,5 +42,8 @@ jobs:
           name: prediction-results
           path: ./batch_process/prediction-results
 
+      - name: Show Docker Logs
+        run: docker logs $(docker-compose -f compose.yaml ps -q batch_process)
+
       - name: Stop Containers (Optional)
         run: docker-compose -f compose.yml down batch_process
