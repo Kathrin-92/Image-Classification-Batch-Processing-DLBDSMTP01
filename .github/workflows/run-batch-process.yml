@@ -27,5 +27,5 @@ jobs:
           sudo apt-get install -y docker-compose
 
       - name: Run Batch Process Container
-        run: docker-compose -f compose.yml up --build batch_process
+        run: docker-compose -f compose.yaml up --build batch_process
         working-directory: .
