@@ -28,7 +28,8 @@ jobs:
           sudo apt-get install -y docker-compose
 
       # Step 1: Get CNN Model up and running
-      - name: Build Docker Image for Model
+      - name: Build Docker Image for Model (if necessary)
+        if: ${{ needs.build.outputs.image_changed == 'true' }}
         run: docker-compose -f compose.yaml build mlflow
         working-directory: .
 
@@ -40,20 +41,34 @@ jobs:
           echo "Waiting for the model to be build."
           sleep 60  
 
-      - name: Check MLflow Status
-        run:
-          curl -I http://mlflow:8080
+      #- name: Check MLflow Status
+      #  run:
+      #    curl -I http://mlflow:8080
 
+      # Step 2: Get FastApi up and running
+      - name: Build FastAPI Image (if necessary)
+        if: ${{ needs.build.outputs.image_changed == 'true' }}
+        run: docker-compose -f compose.yaml build fastapi
 
+      - name: Start Fastapi App Container
+        run: docker-compose -f compose.yaml up -d fastapi
 
+      - name: Wait for the Api to be ready
+        run: |
+          echo "Waiting for the api to be ready"
+          sleep 60  
 
       # Step 3: Get the Batch Process up and running
-      # - name: Run Batch Process Container
-      #  run: docker-compose -f compose.yaml up --no-deps batch_process
-      #  working-directory: .
-#
-      #- name: Upload Prediction Results
-      #  uses: actions/upload-artifact@v3
-      #  with:
-      #    name: prediction-results
-      #    path: ./batch_process/prediction-results
+      - name: Build Batch Image (if necessary)
+        if: ${{ needs.build.outputs.image_changed == 'true' }}
+        run: docker-compose -f compose.yaml build fastapi
+
+      - name: Run Batch Process Container
+        run: docker-compose -f compose.yaml up --no-deps batch_process
+        working-directory: .
+
+      - name: Upload Prediction Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: prediction-results
+          path: ./batch_process/prediction-results
