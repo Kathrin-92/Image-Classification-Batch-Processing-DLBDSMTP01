@@ -34,3 +34,9 @@ jobs:
       - name: Run Batch Process Container
         run: docker-compose -f compose.yaml up --no-deps batch_process
         working-directory: .
+
+      - name: Upload Prediction Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: prediction-results
+          path: ./batch_process/prediction-results
