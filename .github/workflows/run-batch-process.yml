@@ -36,11 +36,14 @@ jobs:
         run: docker-compose -f compose.yaml up --no-deps batch_process
         working-directory: .
 
+      - name: List Uploaded Files
+        run: ls ./upload
+
       - name: Upload Prediction Results
         uses: actions/upload-artifact@v4
         with:
           name: prediction-results
-          path: ./batch_process/prediction-results
+          path: ./prediction-results
 
       - name: Show Docker Logs
         run: docker logs $(docker-compose -f compose.yaml ps -q batch_process)
