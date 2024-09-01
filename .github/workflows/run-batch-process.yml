@@ -37,7 +37,7 @@ jobs:
 
       - name: Wait for the Model to be build and ready
         run: |
-          echo "Waiting for the model to be build."
+          echo "Waiting for the model to be build..."
           sleep 60  
 
       - name: Check MLflow Status
