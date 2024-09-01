@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Install and Setup Docker itself
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -26,17 +27,33 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      - name: Build Docker images
+      # Step 1: Get CNN Model up and running
+      - name: Build Docker Image for Model
+        run: docker-compose -f compose.yml build mlflow
+        working-directory: .
+
+      - name: Start MLflow Container
+        run: docker-compose -f compose.yml up -d mlflow
+
+      - name: Wait for the Model to be build and ready
         run: |
-            docker-compose -f compose.yaml build
-        working-directory: .
+          echo "Waiting for the model to be build"
+          sleep 60  
 
-      - name: Run Batch Process Container
-        run: docker-compose -f compose.yaml up --no-deps batch_process
-        working-directory: .
+      - name: Check MLflow Status
+        run:
+          curl -I http://mlflow:8080
 
-      - name: Upload Prediction Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: prediction-results
-          path: ./batch_process/prediction-results
+
+
+
+      # Step 3: Get the Batch Process up and running
+      # - name: Run Batch Process Container
+      #  run: docker-compose -f compose.yaml up --no-deps batch_process
+      #  working-directory: .
+#
+      #- name: Upload Prediction Results
+      #  uses: actions/upload-artifact@v3
+      #  with:
+      #    name: prediction-results
+      #    path: ./batch_process/prediction-results
