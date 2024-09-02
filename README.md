@@ -2,7 +2,7 @@
 
 ## Table of Contents
 1. [General Info](#General-Info)
-2. [Application Setup and Execution Guide](#Application Setup and Execution Guide)
+2. [Application Setup and Execution Guide](#Application-Setup-and-Execution-Guide)
 3. [Usage and Main Functionalities](#Usage-and-Main-Functionalities)
 
 
