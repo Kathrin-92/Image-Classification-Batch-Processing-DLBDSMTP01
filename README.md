@@ -1,4 +1,4 @@
-# Project: CNN Model Deployment with FastAPI and Batch Processing
+# Project: CNN Model Deployment with FastAPI, Batch Processing and Docker
 
 ## Table of Contents
 1. [General Info](#General-Info)
