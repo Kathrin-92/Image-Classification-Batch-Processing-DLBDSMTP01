@@ -32,6 +32,7 @@ from mlflow.exceptions import MlflowException
 mlflow.set_tracking_uri(uri="http://mlflow:8080")
 model_name = "fashion_cnn_model"
 model_version = 1
+cnn_model = None
 
 try:
     model_uri = f"models:/{model_name}/{model_version}"
@@ -83,7 +84,15 @@ async def index():
 # define the health check route
 @app.get('/health')
 async def health_check():
-    return {"status": "healthy"}
+    if cnn_model is None:
+        return {"status": "unhealthy", "reason": "Failed to load model."}
+    try:
+        # dummy prediction to ensure the model is operational
+        dummy_input = np.random.rand(1, 28, 28, 1).astype(np.float32)
+        cnn_model.predict(dummy_input)
+        return {"status": "healthy", "message": "Model is loaded and operational."}
+    except Exception as e:
+        return {"status": "unhealthy", "reason": f"Error during prediction: {str(e)}"}
 
 
 # define the batch prediction route
