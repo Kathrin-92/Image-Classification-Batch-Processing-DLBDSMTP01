@@ -32,6 +32,7 @@ The application includes three main components:
     cd <repository-directory>
     ```
 4. Ensure that the `docker-compose.yaml` file is present in the root of the project
+5. (! important !) Go to Kaggle and download the data for the model training [here](https://www.kaggle.com/datasets/zalando-research/fashionmnist/data): unpack the .zip file and place the two files "fashion-mnist_train.csv" and "fashion-mnist_test.csv" into the directory model/model_data
 
 
 
