@@ -10,7 +10,7 @@
 In this project, the processing and deployment of a machine learning model is simulated. There are several essential elements in the setup: 
 Using the Fashion MNIST dataset, a rudimentary machine learning model is created to automatically categorize return items into categories 
 based on pictures of the products. This dataset, provided in ready-made CSV files, is available for download [here](https://www.kaggle.com/datasets/zalando-research/fashionmnist/data). After registering with MLFlow, 
-the model is made available as a service that can be started overnight in batch operations. To enable connection between the batch processing 
+the model is made available as a service that can be used in batch operations. To enable connection between the batch processing 
 system and the MLFlow server, FastAPI is used. Dummy image files (CSV files) are handled by the batch process, which is started nightly by 
 a cron job and runs from a specified directory. 
 
