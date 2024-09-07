@@ -43,6 +43,7 @@ The application includes three main components:
 docker compose -f compose.yaml up -d mlflow
 ```
 
+- Make sure that you have downloaded the required test and train data from Kaggle (see above).
 - The container is named `mlflow_container`.
 - Once started, it takes about **5 minutes** for the model to train.
 - Access the MLFlow server at **http://localhost:8080** to check your trained and registered model.
