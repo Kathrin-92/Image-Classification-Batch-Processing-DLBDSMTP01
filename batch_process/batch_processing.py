@@ -32,12 +32,16 @@ def load_data(path_to_batch_data, files_already_processed):
     # check if data was already processed before; read multiple files from temporary storage
     image_data_list = []
     filenames_processed = []
+    filenames_list = []
 
     for filename in os.listdir(path_to_batch_data):
         if filename.endswith(".csv") and filename not in files_already_processed:
             file_path = os.path.join(path_to_batch_data, filename)
             input_data = pd.read_csv(file_path, sep=';')
-            # give each input_data_row a unique name/id so that later i can better match the results to the provided input
+
+            # assign the filename to each input_data_row so to match the prediction results to the provided input
+            filenames_list.extend([filename] * len(input_data))
+
             image_data_list.append(input_data)
             filenames_processed.append(filename)
         else:
@@ -49,7 +53,8 @@ def load_data(path_to_batch_data, files_already_processed):
         return pd.DataFrame(), filenames_processed
 
     df_image_data = pd.concat(image_data_list)
-    return df_image_data, filenames_processed
+
+    return df_image_data, filenames_processed, filenames_list
 
 
 def load_processed_files(filepath):
@@ -88,10 +93,15 @@ def preprocess_data(df_image_data):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-def get_batch_predictions(preprocessed_data):
+def get_batch_predictions(preprocessed_data, filenames_list):
     # send batch to api
     endpoint_url = 'http://fastapi:8000/get_batch_prediction'
-    response = requests.post(endpoint_url, json={"data": preprocessed_data})
+
+    response = requests.post(endpoint_url,
+                             json={
+                                 "data": preprocessed_data,
+                                 "filenames": filenames_list
+                             })
 
     if response.status_code == 200:
         predictions = response.json()
@@ -123,7 +133,7 @@ def batch_process():
     file_path_processed_files = os.path.join(path_to_data, file_name_processed_files)
     files_already_processed = load_processed_files(file_path_processed_files)
 
-    df_image_data, filenames_processed = load_data(path_to_data, files_already_processed)
+    df_image_data, filenames_processed, filenames_list = load_data(path_to_data, files_already_processed)
 
     if df_image_data.empty:
         return
@@ -133,7 +143,7 @@ def batch_process():
         preprocessed_image_data = preprocess_data(df_image_data)
 
         # send preprocessed data to the prediction API
-        predictions = get_batch_predictions(preprocessed_image_data)
+        predictions = get_batch_predictions(preprocessed_image_data, filenames_list)
 
         if not predictions:
             print("No predictions were returned.")
