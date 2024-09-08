@@ -26,6 +26,7 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:8080  # access MLflow server from FastAPI
     volumes:
       - mlflow-artifacts:/usr/src/mlartifacts  # same volume for artifact access
+      - fastapi-logs:/usr/src/api
     networks:
       - app_network
     depends_on:
@@ -60,6 +61,8 @@ volumes:
   upload:
     driver: local
   prediction-results:
+    driver: local
+  fastapi-logs:
     driver: local
 
 
