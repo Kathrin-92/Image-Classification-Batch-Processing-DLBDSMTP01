@@ -47,6 +47,7 @@ services:
     volumes:
       - ./prediction-results:/api/prediction-results
       - ./upload:/api/upload
+      - batch-process-logs:/usr/src/batch_process
     networks:
       - app_network
     restart: on-failure
@@ -63,6 +64,8 @@ volumes:
   prediction-results:
     driver: local
   fastapi-logs:
+    driver: local
+  batch-process-logs:
     driver: local
 
 
