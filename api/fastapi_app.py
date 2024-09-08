@@ -123,6 +123,8 @@ async def health_check():
 # define the batch prediction route
 @app.post('/get_batch_prediction', response_model=list[PredictionResult])
 async def predict(input_data: InputData):
+    logger.info(f"Incoming request for batch prediction with {len(input_data.data)} items.")
+
     try:
         # convert input data to numpy array
         x_input = np.array(input_data.data, dtype=np.float32)
@@ -155,6 +157,7 @@ async def predict(input_data: InputData):
             "most_likely_class_number": int(highest_class_number[i]),
             "corresponding_probability": float(corresponding_probability[i])
         } for i in range(len(highest_class_number))]
+        logger.info(f"Generated {len(results)} results.")
 
         return results
 
