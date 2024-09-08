@@ -15,6 +15,9 @@ It manages the subsequent actions:
 
 # standard library imports
 import numpy as np
+import time
+import logging
+import os
 
 # third-party imports
 from fastapi import FastAPI, HTTPException
@@ -22,6 +25,24 @@ from pydantic import BaseModel
 import mlflow.pyfunc
 from mlflow.exceptions import MlflowException
 # import uvicorn # for local run
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# SET UP CONTAINER-SPECIFIC LOGGING
+# ----------------------------------------------------------------------------------------------------------------------
+
+# creating log file
+
+log_path = '/usr/src/api'
+log_filename = os.path.join(log_path, 'fastapi_app.log')
+
+# logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler(log_filename)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(file_handler)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -37,9 +58,12 @@ cnn_model = None
 try:
     model_uri = f"models:/{model_name}/{model_version}"
     cnn_model = mlflow.pyfunc.load_model(model_uri=model_uri)
+    logger.info(f"Model loaded from {model_uri}")
     print(f"Model loaded from {model_uri}")
 except MlflowException as e:
+    logger.info(f"Failed to load model: {str(e)}")
     print(f"Failed to load model: {str(e)}")
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # START API AND DEFINE INPUT AND OUTPUT
@@ -92,7 +116,8 @@ async def health_check():
         cnn_model.predict(dummy_input)
         return {"status": "healthy", "message": "Model is loaded and operational."}
     except Exception as e:
-        return {"status": "unhealthy", "reason": f"Error during prediction: {str(e)}"}
+        logger.error(f"Error during health check: {str(e)}", exc_info=True)
+        return {"status": "unhealthy", "reason": f"Error during prediction - check logs or try again later."}
 
 
 # define the batch prediction route
@@ -105,8 +130,14 @@ async def predict(input_data: InputData):
         # reshape data to model requirements (batch_size, 28, 28, 1)
         x_input = x_input.reshape(x_input.shape[0], 28, 28, 1)
 
+        # monitoring component #1: latency monitoring (model performance)
+        start_time = time.time()
         # make predictions
         predictions = cnn_model.predict(x_input)
+        end_time = time.time()
+        latency = end_time - start_time
+        logging.info(f"Inference completed, latency: {latency}")
+
 
         # get the highest class and probability
         highest_class_number = predictions.argmax(axis=1)
@@ -128,7 +159,9 @@ async def predict(input_data: InputData):
         return results
 
     except Exception as e:
+        logger.error(f"Error processing input data: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=f"Error processing input data: {str(e)}")
+
 
 # for local run
 #if __name__ == "__main__":
